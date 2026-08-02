@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Environment variables / secrets
+.env
+.env.*
+*.key
+
+# Datasets
+data/raw/*
+data/processed/*
+training/datasets/*
+
+# Keep empty dataset directories
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!training/datasets/.gitkeep
+
+# AI Model Files
+runs/
+*.pt
+*.pth
+*.onnx
+*.engine
+
+# Logs / Temporary files
+*.log
+*.tmp
+temp/
+cache/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
