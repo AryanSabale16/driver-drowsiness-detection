@@ -7,6 +7,8 @@ from ai.detection.mouth_detector import MouthDetector
 from ai.drowsiness.temporal_analyzer import TemporalAnalyzer
 from ai.drowsiness.yawn_analyzer import YawnAnalyzer
 from ai.drowsiness.perclos_analyzer import PerclosAnalyzer
+from ai.drowsiness.blink_rate_analyzer import BlinkRateAnalyzer
+
 
 
 def main():
@@ -32,7 +34,7 @@ def main():
     )
 
     mouth_detector = MouthDetector(
-        mar_threshold=0.50
+        mar_threshold=0.30
     )
 
     temporal_analyzer = TemporalAnalyzer(
@@ -42,12 +44,16 @@ def main():
     )
 
     yawn_analyzer = YawnAnalyzer(
-        mar_threshold=0.55,
+        mar_threshold=0.50,
         yawn_duration_threshold=1.5
     )
 
     perclos_analyzer = PerclosAnalyzer(
         window_duration = 20.0
+    )
+
+    blink_rate_analyzer = BlinkRateAnalyzer(
+        window_duration=20.0
     )
 
     print("=" * 50)
@@ -115,6 +121,10 @@ def main():
 
             perclos = perclos_analyzer.update(
                 eye_state
+            )
+
+            blink_rate = blink_rate_analyzer.update(
+                temporal_data["total_blinks"]
             )
 
             # =================================================
@@ -200,7 +210,10 @@ def main():
 
             cv2.putText(
                 frame,
-                f"Blinks: {temporal_data['total_blinks']}",
+                (
+                f"Blinks: {temporal_data['total_blinks']}  |  "
+                f"Rate: {blink_rate:.1f}/min"
+                ),
                 (30, 110),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
@@ -258,7 +271,7 @@ def main():
 
             cv2.putText(
                 frame,
-                f"Yawns: {yawn_data['total_yawns']}",
+                f"Yawn count: {yawn_data['total_yawns']}",
                 (30, 300),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
@@ -269,7 +282,7 @@ def main():
             cv2.putText(
                 frame,
                 (
-                    "Mouth Open: "
+                    "Yawn Duration: "
                     f"{yawn_data['mouth_open_duration']:.2f}s"
                 ),
                 (30, 355),

@@ -11,7 +11,7 @@ class YawnAnalyzer:
 
     def __init__(
         self,
-        mar_threshold=0.55,
+        mar_threshold=0.60,
         yawn_duration_threshold=1.5
     ):
         self.mar_threshold = mar_threshold

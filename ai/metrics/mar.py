@@ -21,36 +21,32 @@ def calculate_mar(mouth_points):
 
     Expected point order:
 
-        P2      P3
-          \    /
-    P1 ----    ---- P4
-          /    \
-        P6      P5
+    0 -> left mouth corner
+    1 -> upper inner lip
+    2 -> right mouth corner
+    3 -> lower inner lip
+
+    MAR = vertical mouth opening / mouth width
     """
 
-    p1, p2, p3, p4, p5, p6 = mouth_points
+    left_corner = mouth_points[0]
+    upper_lip = mouth_points[1]
+    right_corner = mouth_points[2]
+    lower_lip = mouth_points[3]
 
-    vertical_distance_1 = euclidean_distance(
-        p2,
-        p6
-    )
-
-    vertical_distance_2 = euclidean_distance(
-        p3,
-        p5
+    vertical_distance = euclidean_distance(
+        upper_lip,
+        lower_lip
     )
 
     horizontal_distance = euclidean_distance(
-        p1,
-        p4
+        left_corner,
+        right_corner
     )
 
     if horizontal_distance == 0:
         return 0.0
 
-    mar = (
-        vertical_distance_1 +
-        vertical_distance_2
-    ) / (2.0 * horizontal_distance)
+    mar = vertical_distance / horizontal_distance
 
     return mar

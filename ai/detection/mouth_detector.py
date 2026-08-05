@@ -11,15 +11,13 @@ class MouthDetector:
 
     # Selected MediaPipe mouth landmarks
     MOUTH_INDICES = [
-        61,     # left corner
-        81,     # upper-left
-        311,    # upper-right
-        291,    # right corner
-        402,    # lower-right
-        178     # lower-left
+        61,     # left mouth corner
+        13,     # upper inner lip
+        291,    # right mouth corner
+        14,     # lower inner lip
     ]
 
-    def __init__(self, mar_threshold=0.50):
+    def __init__(self, mar_threshold=0.30):
         self.mar_threshold = mar_threshold
 
     def _landmark_to_pixel(
