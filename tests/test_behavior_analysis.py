@@ -6,6 +6,7 @@ from ai.detection.mouth_detector import MouthDetector
 
 from ai.drowsiness.temporal_analyzer import TemporalAnalyzer
 from ai.drowsiness.yawn_analyzer import YawnAnalyzer
+from ai.drowsiness.perclos_analyzer import PerclosAnalyzer
 
 
 def main():
@@ -43,6 +44,10 @@ def main():
     yawn_analyzer = YawnAnalyzer(
         mar_threshold=0.55,
         yawn_duration_threshold=1.5
+    )
+
+    perclos_analyzer = PerclosAnalyzer(
+        window_duration = 20.0
     )
 
     print("=" * 50)
@@ -105,6 +110,10 @@ def main():
 
             # Temporal eye analysis
             temporal_data = temporal_analyzer.update(
+                eye_state
+            )
+
+            perclos = perclos_analyzer.update(
                 eye_state
             )
 
@@ -211,6 +220,17 @@ def main():
                 (255, 255, 0),
                 2
             )
+            # DISPLAY PERCLOS INFORMATION
+
+            cv2.putText(
+                frame,
+                f"PERCLOS: {perclos:.1f}%",
+                (30, 180),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (255, 255, 0),
+                2
+            )
 
             # =================================================
             # DISPLAY MOUTH INFORMATION
@@ -219,16 +239,6 @@ def main():
             cv2.putText(
                 frame,
                 f"MAR: {mar:.3f}",
-                (30, 195),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                mouth_color,
-                2
-            )
-
-            cv2.putText(
-                frame,
-                f"Mouth: {mouth_state}",
                 (30, 230),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
@@ -238,8 +248,18 @@ def main():
 
             cv2.putText(
                 frame,
-                f"Yawns: {yawn_data['total_yawns']}",
+                f"Mouth: {mouth_state}",
                 (30, 265),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                mouth_color,
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Yawns: {yawn_data['total_yawns']}",
+                (30, 300),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
                 (255, 255, 0),
@@ -252,7 +272,7 @@ def main():
                     "Mouth Open: "
                     f"{yawn_data['mouth_open_duration']:.2f}s"
                 ),
-                (30, 300),
+                (30, 355),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
                 (255, 255, 0),
@@ -263,7 +283,7 @@ def main():
             # WARNINGS
             # =================================================
 
-            warning_y = 350
+            warning_y = 385
 
             if temporal_data["prolonged_closure"]:
 
