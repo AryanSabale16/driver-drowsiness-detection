@@ -1,94 +1,226 @@
 # Driver Drowsiness Detection System
 
-A real-time AI-powered driver monitoring system for detecting signs of driver fatigue and drowsiness using computer vision and deep learning.
+A real-time AI-powered driver monitoring system designed to detect signs of driver fatigue and drowsiness using computer vision, facial behavioural analysis, temporal analysis, and deep learning.
+
+The system analyzes multiple behavioural indicators including eye closure, blinking, yawning, and head movement to determine the driver's alertness level and provide timely warnings and notifications.
+
+---
 
 ## Features
 
-The system will monitor:
+The system monitors multiple indicators of driver behaviour:
 
-- Eye closure
 - Eye Aspect Ratio (EAR)
-- Mouth Aspect Ratio (MAR)
-- Yawning
-- Blink frequency
+- Eye state detection
+- Blink detection
+- Blink frequency / blink rate
+- Eye closure duration
 - PERCLOS
-- Head pose
-- Driver alertness
-- Drowsiness events
+- Mouth Aspect Ratio (MAR)
+- Mouth state detection
+- Yawn detection
+- Yawn duration
+- Head pose estimation
+- Head direction
+- Head-down duration
+- Temporal behavioural analysis
+- Drowsiness event detection
+- Driver alertness assessment
 
-## System Architecture
+### Planned Alert & Notification Features
 
-Camera / Video Feed  
-↓  
-YOLO + MediaPipe  
-↓  
-Facial & Behavioural Metrics  
-↓  
-Temporal Analysis  
-↓  
-Drowsiness Scoring Engine  
-↓  
-Alert System  
-↓  
-FastAPI Backend  
-↓  
+- Real-time visual warnings
+- Audio alarm
+- SMS notification
+- Registered emergency contact system
+- Fleet manager notification
+- Family member notification for private vehicles
+- GPS location sharing
+
+---
+
+# System Architecture
+
+## Current Behaviour Analysis Pipeline
+
+Camera / Video Feed
+↓
+MediaPipe Facial Landmarks
+↓
+┌─────────────────┬─────────────────┬─────────────────┐
+│ Eye Analysis    │ Mouth Analysis  │ Head Pose       │
+│                 │                 │                 │
+│ EAR             │ MAR             │ Pitch           │
+│ Eye State       │ Mouth State     │ Yaw             │
+│ Blink Detection │ Yawn Detection  │ Roll            │
+│ PERCLOS         │ Yawn Duration   │ Head Direction  │
+└─────────────────┴─────────────────┴─────────────────┘
+↓
+Temporal Analysis
+↓
+Behavioural Indicators
+↓
+Drowsiness Intelligence Engine
+↓
+Alert & Notification System
+↓
+Backend
+↓
 React Dashboard
 
-## Technology Stack
+---
 
-### AI / Computer Vision
+# Technology Stack
+
+## AI / Computer Vision
 
 - Python
+- OpenCV
+- MediaPipe
+- NumPy
 - PyTorch
 - Ultralytics YOLO
-- MediaPipe
-- OpenCV
-- NumPy
+- SciPy
 
-### Backend
+## Behavioural Analysis
+
+- Eye Aspect Ratio (EAR)
+- Mouth Aspect Ratio (MAR)
+- PERCLOS
+- Blink Rate
+- Temporal Eye Closure Analysis
+- Temporal Yawn Analysis
+- Head Pose Estimation
+
+## Backend
 
 - FastAPI
 - WebSockets
 
-### Frontend
+## Frontend
 
 - React
 - Vite
 - Tailwind CSS
 - Recharts
 
-### Database
+## Database
 
 - SQLite
 
-## Project Status
+## Planned Communication
 
-🚧 Currently under development.
+- SMS notification service
+- Registered emergency contacts
+- Fleet monitoring notifications
 
-### Progress
+---
+
+# Project Status
+
+🚧 **Currently under active development**
+
+The project is being developed in multiple stages, starting with individual behavioural detection modules and progressing toward an integrated real-time drowsiness intelligence and monitoring platform.
+
+## Development Progress
+
+### Phase 1 — Behaviour Analysis
 
 - [x] Development environment
 - [x] CUDA / GPU configuration
 - [x] Initial project architecture
-- [ ] MediaPipe facial landmarks
-- [ ] Eye state detection
-- [ ] Yawn detection
-- [ ] Head pose estimation
-- [ ] YOLO integration
-- [ ] Drowsiness scoring
+- [x] MediaPipe facial landmarks
+- [x] Eye landmark detection
+- [x] Eye Aspect Ratio (EAR)
+- [x] Eye state detection
+- [x] Blink detection
+- [x] Blink rate calculation
+- [x] Eye closure duration
+- [x] PERCLOS calculation
+- [x] Mouth landmark detection
+- [x] Mouth Aspect Ratio (MAR)
+- [x] Mouth state detection
+- [x] Yawn detection
+- [x] Yawn duration analysis
+- [x] Head pose estimation
+- [x] Head direction detection
+- [x] Head-down duration analysis
+- [x] Temporal behavioural analysis
+- [x] Full behavioural analysis integration
+
+### Phase 2 — Drowsiness Intelligence
+
+- [ ] Multi-signal drowsiness scoring
+- [ ] Eye closure + PERCLOS integration
+- [ ] Yawning integration
+- [ ] Head movement integration
+- [ ] Behavioural severity levels
+- [ ] Drowsiness event classification
+- [ ] False-positive reduction
+- [ ] Adaptive / configurable thresholds
+
+### Phase 3 — Model Training
+
+- [ ] Dataset preparation
+- [ ] Dataset preprocessing
+- [ ] YOLO dataset configuration
+- [ ] Model training
+- [ ] Model validation
+- [ ] Model evaluation
+- [ ] Performance benchmarking
+- [ ] Trained model integration
+
+### Phase 4 — Alert & Notification System
+
+- [ ] Visual warning system
+- [ ] Audio alarm
+- [ ] Alarm severity levels
+- [ ] Alarm cooldown / event management
+- [ ] SMS notification
+- [ ] Registered emergency contact
+- [ ] Fleet manager notification
+- [ ] Family member notification
+- [ ] Notification event logging
+
+### Phase 5 — Location & Backend
+
+- [ ] GPS integration
+- [ ] Location tracking
 - [ ] FastAPI backend
-- [ ] React dashboard
-- [ ] Alert system
-- [ ] Evaluation
-- [ ] Deployment
+- [ ] WebSocket communication
+- [ ] Database integration
+- [ ] Driver / vehicle registration
+- [ ] Emergency contact management
+- [ ] Drowsiness event storage
 
-## Hardware
+### Phase 6 — React Dashboard
 
-Development and testing currently performed using:
+- [ ] Dashboard UI
+- [ ] Live camera feed
+- [ ] Driver status
+- [ ] Drowsiness status
+- [ ] EAR / PERCLOS metrics
+- [ ] Blink statistics
+- [ ] Yawn statistics
+- [ ] Head pose information
+- [ ] Alert status
+- [ ] Notification history
+- [ ] GPS / vehicle location
+- [ ] Historical analytics
+- [ ] Charts and reports
 
-- NVIDIA GeForce GTX 1650
-- CUDA-enabled PyTorch
+### Phase 7 — Final Integration & Deployment
 
-## Disclaimer
+- [ ] Complete system integration
+- [ ] Backend + AI integration
+- [ ] React + backend integration
+- [ ] Alert + notification integration
+- [ ] GPS integration
+- [ ] End-to-end testing
+- [ ] Performance optimization
+- [ ] Error handling
+- [ ] Deployment configuration
+- [ ] Final documentation
 
-This project is intended for research and educational purposes and should not be considered a replacement for certified automotive driver-monitoring safety systems.
+---
+
