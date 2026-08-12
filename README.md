@@ -44,19 +44,19 @@ The system monitors multiple indicators of driver behaviour:
 ## Current Behaviour Analysis Pipeline
 
 Camera / Video Feed
-↓
+-
 MediaPipe Facial Landmarks
-↓
+-
 Temporal Analysis
-↓
+-
 Behavioural Indicators
-↓
+-
 Drowsiness Intelligence Engine
-↓
+-
 Alert & Notification System
-↓
+-
 Backend
-↓
+-
 React Dashboard
 
 ---
