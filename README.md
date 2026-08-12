@@ -47,15 +47,6 @@ Camera / Video Feed
 ↓
 MediaPipe Facial Landmarks
 ↓
-┌─────────────────┬─────────────────┬─────────────────┐
-│ Eye Analysis    │ Mouth Analysis  │ Head Pose       │
-│                 │                 │                 │
-│ EAR             │ MAR             │ Pitch           │
-│ Eye State       │ Mouth State     │ Yaw             │
-│ Blink Detection │ Yawn Detection  │ Roll            │
-│ PERCLOS         │ Yawn Duration   │ Head Direction  │
-└─────────────────┴─────────────────┴─────────────────┘
-↓
 Temporal Analysis
 ↓
 Behavioural Indicators
