@@ -1,5 +1,5 @@
 import cv2
-
+from ai.intelligence.drowsiness_analyzer import DrowsinessAnalyzer
 from ai.detection.face_mesh import FaceMeshDetector
 from ai.detection.eye_detector import EyeDetector
 from ai.detection.mouth_detector import MouthDetector
@@ -32,6 +32,7 @@ def main():
     eye_detector = EyeDetector()
     mouth_detector = MouthDetector()
     head_pose_detector = HeadPoseDetector()
+    
 
     # =========================================================
     # INITIALIZE TEMPORAL ANALYZERS
@@ -41,6 +42,7 @@ def main():
     perclos_analyzer = PerclosAnalyzer()
     yawn_analyzer = YawnAnalyzer()
     head_pose_analyzer = HeadPoseAnalyzer()
+    drowsiness_analyzer = DrowsinessAnalyzer()
 
     print("=" * 60)
     print("FULL DRIVER DETECTION TEST")
@@ -173,7 +175,12 @@ def main():
                     "prolonged_downward": False,
                     "total_prolonged_events": 0
                 }
-
+            drowsiness_data = drowsiness_analyzer.analyze(
+                perclos=perclos,
+                temporal_data=temporal_data,
+                yawn_data=yawn_data,
+                head_pose_data=head_data
+            )
             # =================================================
             # DRAW LANDMARKS
             # =================================================
@@ -291,7 +298,7 @@ def main():
 
             cv2.putText(
                 frame,
-                f"Yawns: {yawn_data['total_yawns']}",
+                f"Yawn Count: {yawn_data['total_yawns']}",
                 (30, 255),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.65,
