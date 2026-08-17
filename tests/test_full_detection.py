@@ -4,11 +4,12 @@ from ai.detection.face_mesh import FaceMeshDetector
 from ai.detection.eye_detector import EyeDetector
 from ai.detection.mouth_detector import MouthDetector
 from ai.detection.head_pose_detector import HeadPoseDetector
-
 from ai.drowsiness.temporal_analyzer import TemporalAnalyzer
 from ai.drowsiness.perclos_analyzer import PerclosAnalyzer
 from ai.drowsiness.yawn_analyzer import YawnAnalyzer
 from ai.drowsiness.head_pose_analyzer import HeadPoseAnalyzer
+from ai.alerts.alert_engine import AlertEngine
+from ai.alerts.alert_controller import AlertController
 
 
 def main():
@@ -43,6 +44,8 @@ def main():
     yawn_analyzer = YawnAnalyzer()
     head_pose_analyzer = HeadPoseAnalyzer()
     drowsiness_analyzer = DrowsinessAnalyzer()
+    alert_engine = AlertEngine()
+    alert_controller = AlertController()
 
     print("=" * 60)
     print("FULL DRIVER DETECTION TEST")
@@ -175,12 +178,19 @@ def main():
                     "prolonged_downward": False,
                     "total_prolonged_events": 0
                 }
+
             drowsiness_data = drowsiness_analyzer.analyze(
                 perclos=perclos,
                 temporal_data=temporal_data,
                 yawn_data=yawn_data,
                 head_pose_data=head_data
             )
+
+            alert_data = alert_engine.evaluate(drowsiness_data)
+
+            alert_result = alert_controller.process(alert_data)
+
+
             # =================================================
             # DRAW LANDMARKS
             # =================================================
@@ -371,51 +381,152 @@ def main():
                 (255, 255, 0),
                 2
             )
-
             # =================================================
-            # WARNINGS
+            # DROWSINESS INTELLIGENCE DISPLAY
             # =================================================
 
-            warning_y = 490
+            intelligence_x = 420
 
-            if temporal_data["prolonged_closure"]:
+            # -------------------------------------------------
+            # DROWSINESS INTELLIGENCE
+            # -------------------------------------------------
+
+            drowsiness_score = drowsiness_data["score"]
+            drowsiness_status = drowsiness_data["status"]
+
+            if drowsiness_status == "CRITICAL":
+                status_color = (0, 0, 255)
+
+            elif drowsiness_status == "DROWSY":
+                status_color = (0, 165, 255)
+
+            else:
+                status_color = (0, 255, 0)
+
+
+            cv2.putText(
+                frame,
+                "DROWSINESS INTELLIGENCE",
+                (intelligence_x, 40),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.55,
+                (255, 255, 255),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Score: {drowsiness_score}",
+                (intelligence_x, 80),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                status_color,
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Status: {drowsiness_status}",
+                (intelligence_x, 115),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                status_color,
+                2
+            )
+
+
+            # -------------------------------------------------
+            # ALERT SYSTEM
+            # -------------------------------------------------
+
+            cv2.putText(
+                frame,
+                "ALERT SYSTEM",
+                (intelligence_x, 165),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.55,
+                (255, 255, 255),
+                2
+            )
+
+            cv2.putText(
+                frame,
+                f"Level: {alert_result['alert_level']}",
+                (intelligence_x, 205),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                status_color,
+                2
+            )
+
+            alarm_status = (
+                "ACTIVE"
+                if alert_result["alarm_active"]
+                else "OFF"
+            )
+
+            cv2.putText(
+                frame,
+                f"Alarm: {alarm_status}",
+                (intelligence_x, 240),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 0, 255)
+                if alert_result["alarm_active"]
+                else (0, 255, 0),
+                2
+            )
+
+
+            # -------------------------------------------------
+            # REASONS
+            # -------------------------------------------------
+
+            cv2.putText(
+                frame,
+                "REASONS:",
+                (intelligence_x, 285),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.55,
+                (255, 255, 255),
+                2
+            )
+
+            reasons = drowsiness_data.get("reasons", [])
+
+            reason_y = 315
+
+            if reasons:
+
+                for reason in reasons[:4]:
+
+                    reason_text = str(reason)
+
+                    if len(reason_text) > 32:
+                        reason_text = reason_text[:29] + "..."
+
+                    cv2.putText(
+                        frame,
+                        f"- {reason_text}",
+                        (intelligence_x, reason_y),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (0, 165, 255),
+                         1
+                    )
+
+                    reason_y += 28
+
+            else:
 
                 cv2.putText(
                     frame,
-                    "WARNING: PROLONGED EYE CLOSURE",
-                    (30, warning_y),
+                    "None",
+                    (intelligence_x, reason_y),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    0.65,
-                    (0, 0, 255),
-                    2
-                )
-
-                warning_y += 30
-
-            if yawn_data["yawn_active"]:
-
-                cv2.putText(
-                    frame,
-                    "WARNING: YAWN DETECTED",
-                    (30, warning_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.65,
-                    (0, 0, 255),
-                    2
-                )
-
-                warning_y += 30
-
-            if head_data["prolonged_downward"]:
-
-                cv2.putText(
-                    frame,
-                    "WARNING: PROLONGED HEAD DOWN",
-                    (30, warning_y),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.65,
-                    (0, 0, 255),
-                    2
+                    0.55,
+                    (0, 255, 0),
+                    1
                 )
 
         # -----------------------------------------------------
@@ -449,7 +560,7 @@ def main():
     # =========================================================
     # CLEANUP
     # =========================================================
-
+    alert_controller.stop()
     camera.release()
     face_detector.close()
     cv2.destroyAllWindows()
