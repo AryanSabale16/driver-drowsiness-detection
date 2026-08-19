@@ -1,5 +1,6 @@
 import threading
-import time
+import os
+import pygame
 
 
 class AlarmManager:
@@ -12,19 +13,69 @@ class AlarmManager:
         self._stop_event = threading.Event()
         self._alarm_thread = None
 
+        project_root = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                ".."
+            )
+        )
+
+        self.warning_sound = os.path.join(
+            project_root,
+            "assets",
+            "sounds",
+            "warning.wav"
+        )
+
+        self.critical_sound = os.path.join(
+            project_root,
+            "assets",
+            "sounds",
+            "critical.wav"
+        )
+
+        # Initialize pygame audio
+        pygame.mixer.init()
+
+
     def _alarm_loop(self, level):
 
-        while not self._stop_event.wait(1):
+        if level == "WARNING":
+            sound_file = self.warning_sound
+            message = "🔊 WARNING ALARM ACTIVE"
 
-            if level == "WARNING":
-                print("🔊 WARNING ALARM ACTIVE")
+        elif level == "CRITICAL":
+            sound_file = self.critical_sound
+            message = "🚨 CRITICAL ALARM ACTIVE"
 
-            elif level == "CRITICAL":
-                print("🚨 CRITICAL ALARM ACTIVE")
+        else:
+            return
 
-            # Wait instead of using time.sleep().
-            # This allows the thread to stop immediately.
-            self._stop_event.wait(1)
+        if not os.path.exists(sound_file):
+            print(f"Alarm sound not found: {sound_file}")
+            return
+
+        try:
+
+            pygame.mixer.music.load(sound_file)
+
+            pygame.mixer.music.play(-1)
+
+            print(message)
+
+            # Keep the alarm alive until stop() is called
+            while not self._stop_event.wait(0.1):
+                pass
+
+        except Exception as e:
+
+            print(f"Alarm playback error: {e}")
+
+        finally:
+
+            pygame.mixer.music.stop()
+
 
     def _start_alarm(self, level):
 
@@ -38,7 +89,7 @@ class AlarmManager:
         ):
             return
 
-        # Stop any existing alarm first.
+        # Stop existing alarm before starting another one.
         self.stop()
 
         self.is_active = True
@@ -54,19 +105,28 @@ class AlarmManager:
 
         self._alarm_thread.start()
 
+
     def start_warning(self):
 
         self._start_alarm("WARNING")
+
 
     def start_critical(self):
 
         self._start_alarm("CRITICAL")
 
+
     def stop(self):
 
         self._stop_event.set()
 
-        # Wait for the existing alarm thread to finish.
+        # Immediately stop currently playing audio.
+        try:
+            pygame.mixer.music.stop()
+        except Exception:
+            pass
+
+        # Wait for the alarm thread to finish.
         if (
             self._alarm_thread is not None
             and self._alarm_thread.is_alive()
@@ -77,3 +137,13 @@ class AlarmManager:
         self.is_active = False
         self.current_level = "NONE"
         self._alarm_thread = None
+
+
+    def shutdown(self):
+
+        self.stop()
+
+        try:
+            pygame.mixer.quit()
+        except Exception:
+            pass
