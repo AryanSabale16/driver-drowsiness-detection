@@ -52,6 +52,13 @@ from ai.alerts.alert_controller import AlertController
 
 
 # ============================================================
+# BACKEND
+# ============================================================
+
+from backend.services.backend_client import BackendStatusClient
+
+
+# ============================================================
 # CONFIGURATION
 # ============================================================
 
@@ -64,6 +71,12 @@ YOLO_CONFIDENCE = 0.25
 
 # Extra margin around YOLO bounding box
 ROI_MARGIN = 20
+
+# FastAPI backend
+BACKEND_URL = "http://127.0.0.1:8000"
+
+# Send backend updates approximately every 0.2 seconds
+BACKEND_UPDATE_INTERVAL = 0.2
 
 
 # ============================================================
@@ -171,6 +184,15 @@ def main():
     alert_controller = AlertController()
 
     # ========================================================
+    # INITIALIZE BACKEND CLIENT
+    # ========================================================
+
+    backend_client = BackendStatusClient(
+        base_url=BACKEND_URL,
+        update_interval=BACKEND_UPDATE_INTERVAL,
+    )
+
+    # ========================================================
     # START MESSAGE
     # ========================================================
 
@@ -183,6 +205,7 @@ def main():
     print("Behavioral  -> MediaPipe drowsiness score")
     print("Hybrid      -> YOLO + Behavioral fusion")
     print("Alert       -> Final warning / critical decision")
+    print("Backend     -> FastAPI live status updates")
     print("Press Q to exit.")
     print("=" * 70)
 
@@ -225,6 +248,41 @@ def main():
 
                 # Make sure any previous alarm is stopped
                 alert_controller.stop()
+
+                # Send no-driver state to backend
+                backend_client.update({
+                    "status": "ALERT",
+                    "drowsiness_score": 0.0,
+                    "behavior_score": 0.0,
+                    "yolo_score": 0.0,
+
+                    "yolo_class": None,
+                    "yolo_confidence": 0.0,
+
+                    "ear": 0.0,
+                    "eye_state": "UNKNOWN",
+
+                    "perclos": 0.0,
+                    "blink_count": 0,
+
+                    "mar": 0.0,
+                    "mouth_state": "UNKNOWN",
+                    "yawn_count": 0,
+
+                    "head_state": "UNKNOWN",
+                    "pitch": 0.0,
+                    "yaw": 0.0,
+
+                    "alert_level": "NONE",
+                    "alarm_active": False,
+
+                    "reasons": [
+                        "No driver detected"
+                    ],
+
+                    "driver_detected": False,
+                    "face_detected": False,
+                })
 
                 cv2.putText(
                     frame,
@@ -282,6 +340,40 @@ def main():
             if roi is None or roi.size == 0:
 
                 alert_controller.stop()
+
+                backend_client.update({
+                    "status": "ALERT",
+                    "drowsiness_score": 0.0,
+                    "behavior_score": 0.0,
+                    "yolo_score": 0.0,
+
+                    "yolo_class": yolo_class,
+                    "yolo_confidence": yolo_confidence,
+
+                    "ear": 0.0,
+                    "eye_state": "UNKNOWN",
+
+                    "perclos": 0.0,
+                    "blink_count": 0,
+
+                    "mar": 0.0,
+                    "mouth_state": "UNKNOWN",
+                    "yawn_count": 0,
+
+                    "head_state": "UNKNOWN",
+                    "pitch": 0.0,
+                    "yaw": 0.0,
+
+                    "alert_level": "NONE",
+                    "alarm_active": False,
+
+                    "reasons": [
+                        "Invalid YOLO ROI"
+                    ],
+
+                    "driver_detected": True,
+                    "face_detected": False,
+                })
 
                 cv2.putText(
                     frame,
@@ -510,6 +602,116 @@ def main():
                         alert_data
                     )
                 )
+
+                # =================================================
+                # STEP 8: SEND LIVE STATUS TO FASTAPI
+                # =================================================
+
+                backend_client.update({
+
+                    # ---------------------------------------------
+                    # FINAL HYBRID RESULT
+                    # ---------------------------------------------
+
+                    "status": hybrid_data["status"],
+
+                    "drowsiness_score": (
+                        hybrid_data["score"]
+                    ),
+
+                    # ---------------------------------------------
+                    # BEHAVIORAL INTELLIGENCE
+                    # ---------------------------------------------
+
+                    "behavior_score": (
+                        hybrid_data[
+                            "behavior_score_normalized"
+                        ]
+                    ),
+
+                    # ---------------------------------------------
+                    # YOLO
+                    # ---------------------------------------------
+
+                    "yolo_score": (
+                        hybrid_data[
+                            "yolo_drowsiness_score"
+                        ]
+                    ),
+
+                    "yolo_class": (
+                        hybrid_data["yolo_class"]
+                    ),
+
+                    "yolo_confidence": (
+                        hybrid_data["yolo_confidence"]
+                    ),
+
+                    # ---------------------------------------------
+                    # EYE
+                    # ---------------------------------------------
+
+                    "ear": average_ear,
+
+                    "eye_state": eye_state,
+
+                    "perclos": perclos,
+
+                    "blink_count": (
+                        temporal_data["total_blinks"]
+                    ),
+
+                    # ---------------------------------------------
+                    # MOUTH
+                    # ---------------------------------------------
+
+                    "mar": mar,
+
+                    "mouth_state": mouth_state,
+
+                    "yawn_count": (
+                        yawn_data["total_yawns"]
+                    ),
+
+                    # ---------------------------------------------
+                    # HEAD POSE
+                    # ---------------------------------------------
+
+                    "head_state": head_state,
+
+                    "pitch": pitch,
+
+                    "yaw": yaw,
+
+                    # ---------------------------------------------
+                    # ALERT
+                    # ---------------------------------------------
+
+                    "alert_level": (
+                        alert_result["alert_level"]
+                    ),
+
+                    "alarm_active": (
+                        alert_result["alarm_active"]
+                    ),
+
+                    # ---------------------------------------------
+                    # REASONS
+                    # ---------------------------------------------
+
+                    "reasons": hybrid_data.get(
+                        "reasons",
+                        []
+                    ),
+
+                    # ---------------------------------------------
+                    # DETECTION FLAGS
+                    # ---------------------------------------------
+
+                    "driver_detected": True,
+
+                    "face_detected": True,
+                })
 
                 # =================================================
                 # TRANSLATE MEDIAPIPE POINTS
@@ -951,6 +1153,40 @@ def main():
                 # calculate the behavioral state.
                 alert_controller.stop()
 
+                backend_client.update({
+                    "status": "ALERT",
+                    "drowsiness_score": 0.0,
+                    "behavior_score": 0.0,
+                    "yolo_score": 0.0,
+
+                    "yolo_class": yolo_class,
+                    "yolo_confidence": yolo_confidence,
+
+                    "ear": 0.0,
+                    "eye_state": "UNKNOWN",
+
+                    "perclos": 0.0,
+                    "blink_count": 0,
+
+                    "mar": 0.0,
+                    "mouth_state": "UNKNOWN",
+                    "yawn_count": 0,
+
+                    "head_state": "UNKNOWN",
+                    "pitch": 0.0,
+                    "yaw": 0.0,
+
+                    "alert_level": "NONE",
+                    "alarm_active": False,
+
+                    "reasons": [
+                        "Face not detected by MediaPipe"
+                    ],
+
+                    "driver_detected": True,
+                    "face_detected": False,
+                })
+
                 cv2.putText(
                     frame,
                     "MEDIAPIPE: FACE NOT FOUND",
@@ -984,6 +1220,8 @@ def main():
         # ====================================================
 
         alert_controller.stop()
+
+        backend_client.stop()
 
         camera.release()
 
